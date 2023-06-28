@@ -1,4 +1,4 @@
-FROM amr64v8/ubuntu
+FROM arm64v8/ubuntu
 
 COPY main ./main
 
