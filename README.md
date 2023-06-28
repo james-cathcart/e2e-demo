@@ -4,7 +4,7 @@ This repo contains four applications. These applications can be used to demonstr
 # The Premise
 You are an engineer and you (and your team) have been tasked with creating an Extract-Transform-Load application (`ETL`) to extract advertisement data from a deprecated `Foo` application and load it into the new `Bar` application. The data layer is provided by the `Zed` application.
 
-The sequence expressed in the diagram below will serve as the logical premise for the demo and provide a psuedo realistic distributed sytsem for experimentation. If the image is not displayed, you may open `e2e-testing.png`.
+The sequence expressed in the diagram below will serve as the logical premise for the demo and provide a psuedo realistic distributed sytsem for experimentation. If the image is not displayed, you may open `e2e-testing-details.png`.
 
 The yellow and red content represent logic or services that are unknown and unaccessible to the engineering team. These unknowns will be the focus of the demo.
 
