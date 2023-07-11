@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8a1a0da4-bdda-42b1-97c3-207437a5a54e",
+		"_postman_id": "6411c6d4-3120-43a5-81ec-937c68e666ff",
 		"name": "E2E ETL Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "8398215"
@@ -30,7 +30,7 @@
 									"    for (i=0; i<jsonData.ads.length; i++) {",
 									"        console.log(\"checking index: \", i);",
 									"        pm.expect(jsonData.ads[i].id).not.empty;",
-									"        pm.expect(jsonData.ads[i].customer).not.empty;",
+									"        pm.expect(jsonData.ads[i].customer).eq('BigCo');",
 									"        pm.expect(jsonData.ads[i].info).not.empty;",
 									"    }",
 									"});",
@@ -57,12 +57,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8084/etl",
+							"raw": "http://{{host}}/etl",
 							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "8084",
 							"path": [
 								"etl"
 							]
