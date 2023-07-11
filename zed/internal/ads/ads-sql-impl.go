@@ -3,6 +3,7 @@ package ads
 import (
 	"database/sql"
 	"e2ezed/internal/types"
+	"errors"
 	"log"
 )
 
@@ -47,6 +48,28 @@ func (dao *SQLImpl) GetAdsByCustomer(customer string) ([]types.Ad, error) {
 
 }
 
+func (dao *SQLImpl) GetAdByID(id int64) ([]types.Ad, error) {
+
+	log.Printf("getting ads for customer: %d", id)
+
+	query := `SELECT rowid, customer, info FROM ads WHERE rowid=$1 LIMIT 1`
+
+	response := dao.conn.QueryRow(query, id)
+
+	var tmp types.Ad
+	err := response.Scan(&tmp.ID, &tmp.Customer, &tmp.Info)
+	if err != nil {
+		log.Printf("error: %s\n", err.Error())
+		return nil, err
+	}
+
+	var adSlice []types.Ad
+	adSlice = append(adSlice, tmp)
+
+	return adSlice, err
+
+}
+
 func (dao *SQLImpl) GetAllAds() ([]types.Ad, error) {
 
 	log.Println(`getting all ads`)
@@ -73,5 +96,99 @@ func (dao *SQLImpl) GetAllAds() ([]types.Ad, error) {
 	}
 
 	return ads, err
+
+}
+
+func (dao *SQLImpl) CreateAd(ad types.Ad) (int64, error) {
+
+	log.Printf("adding new Ad record for customer: %s\n", ad.Customer)
+
+	query := `INSERT INTO ads (customer, info) VALUES ($1, $2)`
+	stmt, err := dao.conn.Prepare(query)
+	if err != nil {
+		log.Printf("error: %s", err.Error())
+		return -1, err
+	}
+
+	result, err := stmt.Exec(ad.Customer, ad.Info)
+	if err != nil {
+		log.Printf("error: %s\n", err.Error())
+		return -1, err
+	}
+	defer stmt.Close()
+
+	lastID, err := result.LastInsertId()
+	if err != nil {
+		log.Printf("error: %s\n", err.Error())
+		return -1, err
+	}
+
+	return lastID, nil
+
+}
+
+func (dao *SQLImpl) Update(ad types.Ad) error {
+
+	log.Printf("updating ad with ID: %d", ad.ID)
+
+	query := `UPDATE ads SET customer=$1, info=$2 WHERE rowid=$3`
+	stmt, err := dao.conn.Prepare(query)
+	if err != nil {
+		log.Printf("error: %s\n", err.Error())
+		return err
+	}
+	defer stmt.Close()
+	result, err := stmt.Exec(ad.Customer, ad.Info, ad.ID)
+	if err != nil {
+		log.Printf("error: %s\n", err.Error())
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Printf("error: %s\n", err.Error())
+		return err
+	}
+
+	if rowsAffected < 1 {
+		err = errors.New("no rows were affected")
+		log.Printf("error: %s\n", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (dao *SQLImpl) DeleteAdByID(id int64) error {
+
+	log.Printf("deleting add with ID: %d", id)
+
+	query := `DELETE FROM ads WHERE rowid=$1 LIMIT 1`
+	stmt, err := dao.conn.Prepare(query)
+	if err != nil {
+		log.Printf("error: %s\n", err.Error())
+		return err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(id)
+	if err != nil {
+		log.Printf("error: %s\n", err.Error())
+		return err
+	}
+
+	numRowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Printf("error: %s\n", err.Error())
+		return err
+	}
+
+	if numRowsAffected < 1 {
+		err = errors.New("error: no rows affected")
+		log.Printf("error: %s\n", err)
+		return err
+	}
+
+	return nil
 
 }
