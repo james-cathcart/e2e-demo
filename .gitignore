@@ -1,4 +1,1 @@
-foo/docker/main
-bar/docker/main
-etl/docker/main
-zed/docker/main
+*/docker/main
