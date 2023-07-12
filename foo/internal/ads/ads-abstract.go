@@ -6,9 +6,10 @@ import (
 )
 
 type Service interface {
-	GetAdsByCustomer(request types.FooRequest) (types.AdResponse, error)
+	GetAdsByCustomer(customer string) (types.AdResponse, error)
+	GetAllAds() (types.AdResponse, error)
 }
 
 type API interface {
-	GetAdsByCustomer(w http.ResponseWriter, r *http.Request)
+	GetAds(w http.ResponseWriter, r *http.Request)
 }

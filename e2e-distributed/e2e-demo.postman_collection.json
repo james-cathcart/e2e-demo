@@ -1,0 +1,330 @@
+{
+	"info": {
+		"_postman_id": "611effff-2550-43f4-82c3-7ebf08e204d7",
+		"name": "E2E Demo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8398215"
+	},
+	"item": [
+		{
+			"name": "ETL",
+			"item": [
+				{
+					"name": "Migrate Records - Dry Run",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Ads array should not be empty\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.ads.length).gt(0);",
+									"});",
+									"",
+									"pm.test(\"All fields in all elements of Ads array should be populated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    for (i=0; i<jsonData.ads.length; i++) {",
+									"        console.log(\"checking index: \", i);",
+									"        pm.expect(jsonData.ads[i].id).greaterThan(0);",
+									"        pm.expect(jsonData.ads[i].customer).not.empty;",
+									"        pm.expect(jsonData.ads[i].info).not.empty;",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Migrated value should be greater than 0\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.migrated).to.greaterThan(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer\": \"BigCo\",\n    \"dryRun\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:8084/etl",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8084",
+							"path": [
+								"etl"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Foo",
+			"item": [
+				{
+					"name": "Get Ads",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Ads array should not be empty\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.ads.length).gt(0);",
+									"});",
+									"",
+									"pm.test(\"All fields in all elements of Ads array should be populated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    for (i=0; i<jsonData.ads.length; i++) {",
+									"        console.log(\"checking index: \", i);",
+									"        pm.expect(jsonData.ads[i].id).greaterThan(0);",
+									"",
+									"        // The customer assertion is where we can catch the ",
+									"        // \"bad\" logic in the Foo application if we use a value ",
+									"        // assertion rather than a not empty assertion. The ",
+									"        // below not-empty assertion will pass:",
+									"        pm.expect(jsonData.ads[i].customer).not.empty;",
+									"",
+									"        // Now replace with the following line and ",
+									"        // execute the request again to get the desired failure:",
+									"        //",
+									"        // pm.expect(jsonData.ads[i].customer).is.eql(\"BigCo\");",
+									"        //",
+									"        ",
+									"        pm.expect(jsonData.ads[i].info).not.empty;",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Count value should be greater than 0\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.count).to.greaterThan(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:8081/ads?filter=customer&value=BigCo",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"ads"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "customer"
+								},
+								{
+									"key": "value",
+									"value": "BigCo"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bar",
+			"item": [
+				{
+					"name": "Create New Records",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ads\": [\n        {\n            \"id\": \"3\",\n            \"customer\": \"AlphaCo\",\n            \"info\": \"Northern Colorado sports gear\"\n        },\n        {\n            \"id\": \"1\",\n            \"customer\": \"BigCo\",\n            \"info\": \"Best cookware on earth!\"\n        },\n        {\n            \"id\": \"4\",\n            \"customer\": \"BravoCo\",\n            \"info\": \"Southern Colorado sports gear\"\n        },\n        {\n            \"id\": \"2\",\n            \"customer\": \"SmallCo\",\n            \"info\": \"We clean carpets cheap!\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:8083/ads",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8083",
+							"path": [
+								"ads"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Zed",
+			"item": [
+				{
+					"name": "Get All Ads",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Ads array should not be empty\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.ads.length).gt(0);",
+									"});",
+									"",
+									"pm.test(\"All fields in all elements of Ads array should be populated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    for (i=0; i<jsonData.ads.length; i++) {",
+									"        console.log(\"checking index: \", i);",
+									"        pm.expect(jsonData.ads[i].id).greaterThan(0);",
+									"        pm.expect(jsonData.ads[i].customer).not.empty;",
+									"        pm.expect(jsonData.ads[i].info).not.empty;",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Count value should equal Ads array length\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.count).eq(jsonData.ads.length);",
+									"});",
+									"",
+									"pm.test(\"Count value should be 4\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.count).eq(4);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:8082/ads",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8082",
+							"path": [
+								"ads"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get AlphaCo Ads",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Ads array should not be empty\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.ads.length).gt(0);",
+									"});",
+									"",
+									"pm.test(\"All fields in all elements of Ads array should be populated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    for (i=0; i<jsonData.ads.length; i++) {",
+									"        console.log(\"checking index: \", i);",
+									"        pm.expect(jsonData.ads[i].id).greaterThan(0);",
+									"        pm.expect(jsonData.ads[i].customer).is.eql(\"AlphaCo\");",
+									"        pm.expect(jsonData.ads[i].info).not.empty;",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Count value should equal Ads array length\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.count).eq(jsonData.ads.length);",
+									"});",
+									"",
+									"pm.test(\"Count value should be 1\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.count).eq(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:8082/ads?filter=customer&value=AlphaCo",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8082",
+							"path": [
+								"ads"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "customer"
+								},
+								{
+									"key": "value",
+									"value": "AlphaCo"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

@@ -20,11 +20,7 @@ func New(fooSvc foo.Service, barSvc bar.Service) Service {
 
 func (svc *SimpleImpl) Migrate(etlRequest types.ETLRequest) (types.ETLResponse, error) {
 
-	fooRequest := types.FooRequest{
-		Customer: etlRequest.Customer,
-	}
-
-	fooRecords, err := svc.fooSvc.GetAdsByCustomer(fooRequest)
+	fooRecords, err := svc.fooSvc.GetAdsByCustomer(etlRequest.Customer)
 	if err != nil {
 		return types.ETLResponse{}, err
 	}

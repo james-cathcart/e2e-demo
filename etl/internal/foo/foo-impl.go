@@ -1,7 +1,6 @@
 package foo
 
 import (
-	"bytes"
 	"e2eetl/internal/types"
 	"encoding/json"
 	"fmt"
@@ -19,19 +18,14 @@ func New() Service {
 	}
 }
 
-func (svc *RestImpl) GetAdsByCustomer(request types.FooRequest) (types.AdResponse, error) {
+func (svc *RestImpl) GetAdsByCustomer(customer string) (types.AdResponse, error) {
 
-	jsonBytes, err := json.Marshal(request)
-	if err != nil {
-		return types.AdResponse{}, err
-	}
-
-	fooURL := fmt.Sprintf("http://%s/ads", FooHost)
+	fooURL := fmt.Sprintf("http://%s/ads?filter=customer&value=%s", FooHost, customer)
 
 	apiRequest, err := http.NewRequest(
-		http.MethodPost,
+		http.MethodGet,
 		fooURL,
-		io.NopCloser(bytes.NewReader(jsonBytes)),
+		nil,
 	)
 	if err != nil {
 		return types.AdResponse{}, err

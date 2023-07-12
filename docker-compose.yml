@@ -1,0 +1,35 @@
+---
+version: "3.8"
+
+services:
+  foo:
+    container_name: foo
+    image: foo:v0.0.8
+    build:
+      context: foo/docker/
+    ports:
+      - 8081:8081
+  
+  zed:
+    container_name: zed
+    image: zed:v0.0.6
+    build:
+      context: zed/docker/
+    ports:
+      - 8082:8082
+
+  bar:
+    container_name: bar
+    image: bar:v0.0.6
+    build:
+      context: bar/docker/
+    ports:
+      - 8083:8083
+
+  etl:
+    container_name: etl
+    image: etl:v0.0.9
+    build:
+      context: etl/docker/
+    ports:
+      - 8084:8084

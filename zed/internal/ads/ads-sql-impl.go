@@ -59,6 +59,11 @@ func (dao *SQLImpl) GetAdByID(id int64) ([]types.Ad, error) {
 	var tmp types.Ad
 	err := response.Scan(&tmp.ID, &tmp.Customer, &tmp.Info)
 	if err != nil {
+
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+
 		log.Printf("error: %s\n", err.Error())
 		return nil, err
 	}
@@ -66,7 +71,7 @@ func (dao *SQLImpl) GetAdByID(id int64) ([]types.Ad, error) {
 	var adSlice []types.Ad
 	adSlice = append(adSlice, tmp)
 
-	return adSlice, err
+	return adSlice, nil
 
 }
 
@@ -163,7 +168,7 @@ func (dao *SQLImpl) DeleteAdByID(id int64) error {
 
 	log.Printf("deleting add with ID: %d", id)
 
-	query := `DELETE FROM ads WHERE rowid=$1 LIMIT 1`
+	query := `DELETE FROM ads WHERE rowid=$1`
 	stmt, err := dao.conn.Prepare(query)
 	if err != nil {
 		log.Printf("error: %s\n", err.Error())

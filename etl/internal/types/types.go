@@ -1,7 +1,7 @@
 package types
 
 type Ad struct {
-	ID       string `json:"id"`
+	ID       int64  `json:"id"`
 	Customer string `json:"customer"`
 	Info     string `json:"info"`
 }

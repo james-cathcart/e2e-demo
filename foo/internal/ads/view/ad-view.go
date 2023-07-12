@@ -2,9 +2,7 @@ package view
 
 import (
 	"e2efoo/internal/ads"
-	"e2efoo/internal/types"
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 )
@@ -19,31 +17,47 @@ func NewAdsAPI(svc ads.Service) ads.API {
 	}
 }
 
-func (api *HttpView) GetAdsByCustomer(w http.ResponseWriter, r *http.Request) {
+func (api *HttpView) GetAds(w http.ResponseWriter, r *http.Request) {
 
-	log.Println(`GetAdsByCustomer endpoint called`)
+	log.Println(`GetAds invoked`)
 
-	defer r.Body.Close()
-	bodyBytes, err := io.ReadAll(r.Body)
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowd", http.StatusMethodNotAllowed)
+		return
+	}
+
+	filter := r.URL.Query().Get(`filter`)
+
+	switch filter {
+	case `customer`:
+		api.getAdsByCustomer(w, r)
+	default:
+		api.getAllAds(w, r)
+	}
+
+}
+
+func (api *HttpView) getAdsByCustomer(w http.ResponseWriter, r *http.Request) {
+
+	log.Println(`getAdsByCustomer endpoint called`)
+
+	// Note: the following if statement represents some old "bad" logic unknown to the dev
+	// team and the client. This is what we will be trying to catch with the ETL
+	// applications E2E tests
+	customer := r.URL.Query().Get(`valeu`)
+	if customer == `` {
+		api.getAllAds(w, r)
+		return
+	}
+	// end "bad" logic example
+
+	adRecords, err := api.svc.GetAdsByCustomer(customer)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	var fooRequest types.FooRequest
-	err = json.Unmarshal(bodyBytes, &fooRequest)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	adsRecords, err := api.svc.GetAdsByCustomer(fooRequest)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	jsonBytes, err := json.Marshal(adsRecords)
+	jsonBytes, err := json.Marshal(adRecords)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -53,4 +67,23 @@ func (api *HttpView) GetAdsByCustomer(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonBytes)
 
+}
+
+func (api *HttpView) getAllAds(w http.ResponseWriter, r *http.Request) {
+
+	adRecords, err := api.svc.GetAllAds()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jsonBytes, err := json.Marshal(adRecords)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set(`Content-Type`, `application/json`)
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonBytes)
 }

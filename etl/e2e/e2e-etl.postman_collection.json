@@ -29,8 +29,19 @@
 									"    var jsonData = pm.response.json();",
 									"    for (i=0; i<jsonData.ads.length; i++) {",
 									"        console.log(\"checking index: \", i);",
-									"        pm.expect(jsonData.ads[i].id).not.empty;",
-									"        pm.expect(jsonData.ads[i].customer).eq('BigCo');",
+									"        pm.expect(jsonData.ads[i].id).greaterThan(0);",
+									"",
+									"        // The customer assertion is where we can catch the ",
+									"        // \"bad\" logic in the Foo application if we use a value ",
+									"        // assertion rather than a not empty assertion. The ",
+									"        // below not-empty assertion will pass:",
+									"        pm.expect(jsonData.ads[i].customer).not.empty;",
+									"",
+									"        // Now replace with the following line and ",
+									"        // execute the request again to get the desired failure:",
+									"        //",
+									"        // pm.expect(jsonData.ads[i].customer).is.eql(\"BigCo\");",
+									"        ",
 									"        pm.expect(jsonData.ads[i].info).not.empty;",
 									"    }",
 									"});",
@@ -57,8 +68,8 @@
 							}
 						},
 						"url": {
-							"raw": "http://{{host}}/etl",
-							"protocol": "http",
+							"raw": "{{protocol}}://{{host}}/etl",
+							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],

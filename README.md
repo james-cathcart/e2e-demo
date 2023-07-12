@@ -1,32 +1,18 @@
 # E2E Demo
 This repo contains four applications. These applications can be used to demonstrate aspects of E2E testing and allow engineers to explore and experiment in a safe local environment.
 
-# The Premise
-You are an engineer and you (and your team) have been tasked with creating an Extract-Transform-Load application (`ETL`) to extract advertisement data from a deprecated `Foo` application and load it into the new `Bar` application. The data layer is provided by the `Zed` application.
-
-The sequence expressed in the diagram below will serve as the logical premise for the demo and provide a psuedo realistic distributed sytsem for experimentation. If the image is not displayed, you may open `e2e-testing-details.png`.
-
-The yellow and red content represent logic or services that are unknown and unaccessible to the engineering team. These unknowns will be the focus of the demo.
-
-![alt text](e2e-testing-details.png "Sequence Diagram")
-
 # Setting up the environment
 
 ## Build Binaries
 Navigate to each application's directory and run make to build the binary
 ```
-cd <repo>/foo && make
-cd <repo>/bar && make
-cd <repo>/zed && make
-cd <repo>/etl && make
+./prepare.sh
 ```
 
 ## Option 1) Docker
 ### Build Docker Images
 ```
-# note: Mac M1 users may wish to use the <repo>/arm64 directory
-
-cd <repo>/amd64
+cd <repo>
 docker compose build
 ```
 
@@ -57,45 +43,46 @@ bar  | 2023/06/28 06:19:36 starting bar service on port -> 8083
 ## Option 2) Run each binary individually
 Navigate to each application's directory in a new terminal and execute the application. 
 
-_Note: Mac M1 users may with to use the `<repo>/<app>/arm64` directories._
+_Note: Mac M1 users may with to use the `<repo>/<app>` directories._
 ```
 # Terminal 1
-cd <repo>/foo/amd64 && ./main
+cd <repo>/foo/docker && ./main
 
 # Terminal 2
-cd <repo>/bar/amd64 && ./main
+cd <repo>/bar/docker && ./main
 
 # Terminal 3
-cd <repo>/zed/amd64 && ./main
+cd <repo>/zed/docker && ./main
 
 # Terminal 4
-cd <repo>/etl/amd64 && ./main
+cd <repo>/etl/docker && ./main
 ```
 
 The environment should be successfully setup at this point, hopefully...
 
 # Validate Environment Functionality
+This section discusses how to install dependencies for working with Postman/newman and validates the functionality of the test environment.
 
 ## Pre-Requisites
 - Install Postman UI and create free account (https://www.postman.com/downloads/)
 - Install Node JS (https://nodejs.org/en/download)
 - Install Newman CLI runner (https://support.postman.com/hc/en-us/articles/115003703325-How-to-install-Newman)
 
-## Execute Control Collection
-Navigate to the `<repo>/e2e-control` directory and run the collection
+## Execute Distributed E2E Collection
+Navigate to the `<repo>/e2e-distributed` directory and run the collection
 ```
-cd <repo>/e2e-control && newman e2e-demo.postman_collection.json
+cd <repo>/e2e-distributed && newman e2e-demo.postman_collection.json -e demo-local.postman_environment.json
 ```
 Expected Output:
 ```
-$ newman run e2e-demo.postman_collection.json
+$ newman run e2e-demo.postman_collection.json -e demo-local.postman_environment.json
 newman
 
 E2E Demo
 
 ❏ ETL
 ↳ Migrate Records - Dry Run
-  POST http://localhost:8084/etl [201 Created, 406B, 24ms]
+  POST http://localhost:8084/etl [201 Created, 398B, 27ms]
   ✓  Status code is 201
   ✓  Ads array should not be empty
   ┌
@@ -109,7 +96,7 @@ E2E Demo
 
 ❏ Foo
 ↳ Get Ads
-  POST http://localhost:8081/ads [200 OK, 398B, 3ms]
+  GET http://localhost:8081/ads?filter=customer&value=BigCo [200 OK, 390B, 4ms]
   ✓  Status code is 200
   ✓  Ads array should not be empty
   ┌
@@ -128,7 +115,7 @@ E2E Demo
 
 ❏ Zed
 ↳ Get All Ads
-  POST http://localhost:8082/ads [200 OK, 398B, 2ms]
+  GET http://localhost:8082/ads [200 OK, 399B, 2ms]
   ✓  Status code is 200
   ✓  Ads array should not be empty
   ┌
@@ -142,7 +129,7 @@ E2E Demo
   ✓  Count value should be 4
 
 ↳ Get AlphaCo Ads
-  POST http://localhost:8082/ads [200 OK, 198B, 1ms]
+  GET http://localhost:8082/ads?filter=customer&value=AlphaCo [200 OK, 196B, 2ms]
   ✓  Status code is 200
   ✓  Ads array should not be empty
   ┌
@@ -165,10 +152,10 @@ E2E Demo
 ├─────────────────────────┼─────────────────┼─────────────────┤
 │              assertions │              19 │               0 │
 ├─────────────────────────┴─────────────────┴─────────────────┤
-│ total run duration: 106ms                                   │
+│ total run duration: 113ms                                   │
 ├─────────────────────────────────────────────────────────────┤
-│ total data received: 960B (approx)                          │
+│ total data received: 934B (approx)                          │
 ├─────────────────────────────────────────────────────────────┤
-│ average response time: 6ms [min: 1ms, max: 24ms, s.d.: 8ms] │
+│ average response time: 7ms [min: 2ms, max: 27ms, s.d.: 9ms] │
 └─────────────────────────────────────────────────────────────┘
 ```

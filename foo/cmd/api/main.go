@@ -23,7 +23,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc(`/ads`, adsAPI.GetAdsByCustomer)
+	mux.HandleFunc(`/ads`, adsAPI.GetAds)
 
 	server := http.Server{
 		Addr:    fmt.Sprintf("0.0.0.0:%d", SERVICE_PORT),

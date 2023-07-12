@@ -15,5 +15,9 @@ type DAO interface {
 }
 
 type API interface {
+	ServeHTTP(w http.ResponseWriter, r *http.Request)
 	GetAds(w http.ResponseWriter, r *http.Request)
+	CreateAd(w http.ResponseWriter, r *http.Request)
+	UpdateAd(w http.ResponseWriter, r *http.Request)
+	DeleteAdByID(w http.ResponseWriter, r *http.Request)
 }

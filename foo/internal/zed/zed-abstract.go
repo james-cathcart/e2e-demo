@@ -5,5 +5,6 @@ import (
 )
 
 type Service interface {
-	GetAdsByCustomer(request types.ZedRequest) (types.AdResponse, error)
+	GetAdsByCustomer(customer string) (types.AdResponse, error)
+	GetAllAds() (types.AdResponse, error)
 }

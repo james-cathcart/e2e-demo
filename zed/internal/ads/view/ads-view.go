@@ -42,53 +42,54 @@ func (view *AdsView) GetAds(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(`GetAds invoked`)
 
-	defer r.Body.Close()
-
-	bodyBytes, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	var adRequest types.AdRequest
-	err = json.Unmarshal(bodyBytes, &adRequest)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	var adSlice []types.Ad
-
 	filter := r.URL.Query().Get(`filter`)
 
 	switch filter {
 	case `id`:
 		// ID lookup
-		adSlice, err = view.dao.GetAdByID(adRequest.ID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
+		view.getAdsByID(w, r)
 	case `customer`:
 		// customer lookup
-		adSlice, err = view.dao.GetAdsByCustomer(adRequest.Customer)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		view.getAdsByCustomer(w, r)
 	default:
 		// all ads
-		adSlice, err = view.dao.GetAllAds()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		view.getAllAds(w, r)
 	}
 
-	adResponse := types.AdResponse{
-		Ads:   adSlice,
-		Count: len(adSlice),
+}
+
+func (view *AdsView) getAdsByID(w http.ResponseWriter, r *http.Request) {
+
+	log.Println(`getAdsByID invoked`)
+
+	idStr := r.URL.Query().Get(`value`)
+	id32, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id64 := int64(id32) // convert to long
+
+	adSlice, err := view.dao.GetAdByID(id64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	var adResponse types.AdResponse
+
+	if adSlice == nil && err == nil {
+		adResponse = types.AdResponse{
+			Ads:   []types.Ad{},
+			Count: 0,
+		}
+		w.WriteHeader(http.StatusNoContent)
+	} else {
+		adResponse = types.AdResponse{
+			Ads:   adSlice,
+			Count: len(adSlice),
+		}
+		w.WriteHeader(http.StatusOK)
 	}
 
 	jsonBytes, err := json.Marshal(adResponse)
@@ -98,7 +99,61 @@ func (view *AdsView) GetAds(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set(`Content-Type`, `application/json`)
+	w.Write(jsonBytes)
+
+}
+
+func (view *AdsView) getAdsByCustomer(w http.ResponseWriter, r *http.Request) {
+
+	log.Println(`getAdsByCustomer invoked`)
+
+	customer := r.URL.Query().Get(`value`)
+	adSlice, err := view.dao.GetAdsByCustomer(customer)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	adResp := types.AdResponse{
+		Ads:   adSlice,
+		Count: len(adSlice),
+	}
+
+	jsonBytes, err := json.Marshal(adResp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set(`Content-Type`, `application/json`)
 	w.WriteHeader(http.StatusOK)
+	w.Write(jsonBytes)
+
+}
+
+func (view *AdsView) getAllAds(w http.ResponseWriter, r *http.Request) {
+
+	log.Println(`getAllAds invoked`)
+
+	adSlice, err := view.dao.GetAllAds()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	adResp := types.AdResponse{
+		Ads:   adSlice,
+		Count: len(adSlice),
+	}
+
+	jsonBytes, err := json.Marshal(adResp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set(`Content-Type`, `application/json`)
 	w.Write(jsonBytes)
 
 }
