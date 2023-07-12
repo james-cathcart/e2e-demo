@@ -42,8 +42,6 @@ bar  | 2023/06/28 06:19:36 starting bar service on port -> 8083
 
 ## Option 2) Run each binary individually
 Navigate to each application's directory in a new terminal and execute the application. 
-
-_Note: Mac M1 users may with to use the `<repo>/<app>` directories._
 ```
 # Terminal 1
 cd <repo>/foo/docker && ./main
